@@ -1,15 +1,15 @@
-require 'ruby2d'
+require 'ruby2d'  # Kallar på ruby2d biblioteket
 
-set width: 800
-set height: 600
+set width: 800  # Definierar bredd för fönstret
+set height: 600  # Definierar höjd för fönstret
 
-WALK_SPEED = 6
-CIRCLE_SIZE = 15
-CIRCLE_SPEED = 5  # You can adjust this value
-CIRCLE_FREQUENCY = 5  # You can adjust this value
+WALK_SPEED = 6  # Gånghastighet
+HEART_SIZE = 20  # Hjärtstorlek
+HEART_SPEED = 3  # Hjärthastighet
+HEART_FREQUENCY = 3  # Antalet hjärtan som ska falla
 
-background = Image.new('background.jpg')
-hero = Sprite.new(
+background = Image.new('background.jpg')  # Bestämmer bakgrundsbilden
+hero = Sprite.new(  # Bestämmer storlek och position för spelgubben
   'hero.png',
   width: 200,
   height: 200,
@@ -17,27 +17,18 @@ hero = Sprite.new(
   y: 256
 )
 
-def update_hitbox(hitbox, hero)
+def update_hitbox(hitbox, hero)  # Funktion för att uppdatera hitboxens position och storlek baserat på hjältens position och storlek
   hitbox.x = hero.x + hero.width * 0.25
   hitbox.y = hero.y + hero.height * 0.25
   hitbox.size = hero.width * 0.5
 end
 
-hitbox = Square.new(color: [1, 0, 1, 0], size: hero.width * 0.5) # Transparent hitbox
+hitbox = Square.new(color: [1, 0, 1, 0], size: hero.width * 0.5)  # Osynlig hitbox för kollision
 
-update_hitbox(hitbox, hero)
 
-circles = []
+hearts = []  # Array för hjärtan
 
-on :mouse_move do |event|
-  if hitbox.contains?(event.x, event.y)
-    hero.color.g = 0
-  else
-    hero.color.g = 1
-  end
-end
-
-on :key_held do |event|
+on :key_held do |event|  #Knapptryckningar för att flytta spelgubben
   case event.key
   when 'left'
     hero.play flip: :horizontal
@@ -60,31 +51,31 @@ on :key_held do |event|
     end
   end
 
-  update_hitbox(hitbox, hero)
+  update_hitbox(hitbox, hero)  # Uppdatera hitboxens position och storlek
 end
 
-update do
-  if rand(100) < CIRCLE_FREQUENCY  # Adjust frequency of circle creation
-    circles << Circle.new(x: rand(Window.width), y: 0, radius: CIRCLE_SIZE, color: 'red')
+update do  # Uppdaterar spelvärlden
+  if rand(100) < HEART_FREQUENCY  # Justerar frekvensen för hjärtskapande
+    hearts << Image.new('heart.jpg', x: rand(Window.width), y: 0, width: HEART_SIZE, height: HEART_SIZE)  # Lägger till ett nytt hjärta i arrayen
   end
 
-  circles.each do |circle|
-    circle.y += CIRCLE_SPEED  # Adjust speed of falling circles
+  hearts.each do |heart|
+    heart.y += HEART_SPEED  # Justerar hastigheten på fallande hjärtan
 
-    if hitbox.contains?(circle.x, circle.y) && circle.y + CIRCLE_SIZE >= hero.y && circle.x + CIRCLE_SIZE >= hero.x && circle.x <= hero.x + hero.width
-      puts "Game Over!"
-      close
+    if hitbox.contains?(heart.x, heart.y) && heart.y + HEART_SIZE >= hero.y && heart.x + HEART_SIZE >= hero.x && heart.x <= hero.x + hero.width  # Kollar om hjärtat kolliderar med hjälten
+      puts "Game Over!"  # Skriver ut "Game Over!" i terminalen
+      close  # Stänger ner spelet
     end
 
-    if circle.y > Window.height + CIRCLE_SIZE
-      circle.remove
-      circles.delete(circle)
+    if heart.y > Window.height + HEART_SIZE  # Om hjärtat passerar nerför fönstret
+      heart.remove  # Ta bort hjärtat från skärmen
+      hearts.delete(heart)  # Ta bort hjärtat från arrayen
     end
   end
 end
 
-on :key_up do
-  hero.stop
+on :key_up do  # Knapptryckningar när en knapp släpps
+  hero.stop  # Stannar spelgubbens rörelse
 end
 
-show
+show  # Visar fönstret för spelaren
